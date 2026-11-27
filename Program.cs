@@ -1,6 +1,9 @@
 using CadenceStore.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using CadenceStore.Models; // Lets Program.cs refer to EmailSettings.
+using CadenceStore.Services; // Lets Program.cs refer to EmailSender.
+using Microsoft.AspNetCore.Identity.UI.Services; // Lets Program.cs refer to IEmailSender.
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +16,15 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
 	.AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+
+
+
+// ASHLEY - MAKING A CONNECTION BETWEEN THE JSON EMAIL SETTINGS IN THE USER SECRETS AND THE EMAILSETTINGS MODEL
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
+//ASHLEY - CONNECTING THE EMAIL SENDER INTERFACE TO THE EMAIL SENDER CLASS I CREATED TO HANDLE EMAIL CONFIRMATION
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+
 
 var app = builder.Build();
 
@@ -33,8 +45,9 @@ else
 }
 
 app.UseHttpsRedirection();
-app.UseRouting();
 
+//Middleware to find pages, identify user, and determine what the user is allowed to do.
+app.UseRouting();
 app.UseAuthorization();
 
 app.MapStaticAssets();
