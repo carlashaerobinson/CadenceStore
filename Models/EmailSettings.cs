@@ -17,5 +17,12 @@ namespace CadenceStore.Models
             Username = "";
             Password = "";
         }
+
+        public bool IsConfigured() =>
+            !string.IsNullOrWhiteSpace(From) &&
+            !string.IsNullOrWhiteSpace(SmtpServer) &&
+            Port > 0 &&
+            !string.IsNullOrWhiteSpace(Username) &&
+            !string.IsNullOrWhiteSpace(Password);
     }
 }

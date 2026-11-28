@@ -20,10 +20,16 @@ builder.Services.AddControllersWithViews();
 
 
 // ASHLEY - MAKING A CONNECTION BETWEEN THE JSON EMAIL SETTINGS IN THE USER SECRETS AND THE EMAILSETTINGS MODEL
-builder.Services.Configure<EmailSettings>(
-    builder.Configuration.GetSection("EmailSettings"));
-//ASHLEY - CONNECTING THE EMAIL SENDER INTERFACE TO THE EMAIL SENDER CLASS I CREATED TO HANDLE EMAIL CONFIRMATION
-builder.Services.AddTransient<IEmailSender, EmailSender>();
+var emailSettingsSection = builder.Configuration.GetSection("EmailSettings");
+builder.Services.Configure<EmailSettings>(emailSettingsSection);
+
+// Only register EmailSender when settings exist so missing UserSecrets fall back to Identity's dev link.
+var emailSettings = emailSettingsSection.Get<EmailSettings>();
+if (emailSettings?.IsConfigured() == true)
+{
+    //ASHLEY - CONNECTING THE EMAIL SENDER INTERFACE TO THE EMAIL SENDER CLASS I CREATED TO HANDLE EMAIL CONFIRMATION
+    builder.Services.AddTransient<IEmailSender, EmailSender>();
+}
 
 
 var app = builder.Build();

@@ -35,6 +35,10 @@ namespace CadenceStore.Services
             string subject,     // The email's subject line.
             string htmlMessage) // The email content; it can include a clickable link.
         {
+            if (!_settings.IsConfigured())
+            {
+                throw new InvalidOperationException("EmailSettings are not configured.");
+            }
 
             //ALL THE CLASSES INSTANTIATED FROM THIS POINT ARE A PART OF THE SYSTEM.NET.MAIL NAMESPACE 
 
@@ -43,7 +47,7 @@ namespace CadenceStore.Services
 
             //ASSIGNING VALUES TO THE MEMBER VARIABLES 
             // Sets what the person receiving the email will see as the from email. Instantiating with the from setting from EmailSettings object
-            messageObject.From = new MailAddress(_settings.From);
+            messageObject.From = new MailAddress(_settings.From.Trim());
 
             // Sets who receives the email.
             messageObject.To.Add(email);
@@ -57,16 +61,17 @@ namespace CadenceStore.Services
 
             // Connects to the mail server and port stored in EmailSettings.
             using var smtpClient = new SmtpClient(
-                _settings.SmtpServer,
+                _settings.SmtpServer.Trim(),
                 _settings.Port)
             {
                 // Requests a secure connection to the mail server.
                 EnableSsl = true,
+                UseDefaultCredentials = false,
 
-                // Uses Gmail username and app password to sign in. Gets these credentials from the EmailSettingClass
+                // Strip spaces from Gmail app passwords (Google displays them in 4-char groups).
                 Credentials = new NetworkCredential(
-                    _settings.Username,
-                    _settings.Password)
+                    _settings.Username.Trim(),
+                    _settings.Password.Replace(" ", ""))
             };
 
             // Sends the messageObject and waits for the sending attempt to finish.
